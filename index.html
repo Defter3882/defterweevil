@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的网站</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+    body {
+      background: #f5f7fa;
+      color: #333;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .menu a {
+      color: white;
+      text-decoration: none;
+      margin-left: 1.5rem;
+    }
+    .hero {
+      background: linear-gradient(135deg, #42a5f5, #4781c5);
+      color: white;
+      padding: 5rem 1rem;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.8rem 2rem;
+      background: white;
+      color: #2c3e50;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    section {
+      padding: 4rem 0;
+      text-align: center;
+    }
+    section h2 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: #2c3e50;
+    }
+    .card-box {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .card h3 {
+      margin-bottom: 1rem;
+      color: #2c3e50;
+    }
+    footer {
+      background: #2c3e50;
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <div class="logo">我的网站</div>
+    <div class="menu">
+      <a href="#home">首页</a>
+      <a href="#about">关于</a>
+      <a href="#service">服务</a>
+      <a href="#contact">联系</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="home">
+  <div class="container">
+    <h1>欢迎来到我的网站</h1>
+    <p>这是我用纯HTML搭建的第一个网站，简单、干净、可直接上线。</p>
+    <a href="#contact" class="btn">联系我</a>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <h2>关于我们</h2>
+    <p>专注简单好用的网页展示，支持手机、电脑自适应。</p>
+  </div>
+</section>
+
+<section id="service" style="background: white;">
+  <div class="container">
+    <h2>服务介绍</h2>
+    <div class="card-box">
+      <div class="card">
+        <h3>网页搭建</h3>
+        <p>简单快速搭建展示型网站、个人主页。</p>
+      </div>
+      <div class="card">
+        <h3>域名解析</h3>
+        <p>帮你把域名绑定到网站，全网可访问。</p>
+      </div>
+      <div class="card">
+        <h3>技术支持</h3>
+        <p>基础修改、文字图片替换都可轻松搞定。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <h2>联系我们</h2>
+    <p>邮箱：yourname@example.com</p>
+    <p>欢迎合作与交流</p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2026 我的网站 · 保留所有权利</p>
+  </div>
+</footer>
+
+</body>
+</html>
