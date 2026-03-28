@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>假想装机馆</title>
+  <!-- 简单美化，风格接近硬件品牌官网 -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+
+    /* 顶部导航栏 */
+    .top-nav {
+      background: #1a1a1d;
+      color: white;
+      display: flex;
+      padding: 15px 30px;
+      gap: 30px;
+      font-size: 18px;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    .top-nav a {
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .top-nav a:hover {
+      color: #00aaff;
+    }
+
+    /* 主体布局 */
+    .container {
+      display: flex;
+      max-width: 1400px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    /* 左侧筛选栏 */
+    .filter {
+      width: 260px;
+      padding: 20px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      position: sticky;
+      height: fit-content;
+      top: 100px;
+    }
+    .filter h3 {
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    .filter-item {
+      margin: 10px 0;
+    }
+
+    /* 右侧商品区 */
+    .products {
+      flex: 1;
+      padding: 0 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill(), minmax(280px, 1fr));
+      gap: 25px;
+    }
+
+    /* 商品卡片 */
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #eee;
+    }
+    .card-body {
+      padding: 15px;
+    }
+    .card h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .card p {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .price {
+      font-size: 18px;
+      color: #c00;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .buy-btn {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .buy-btn:hover {
+      background: #0055aa;
+    }
+
+    /* 页面切换 */
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 顶部导航 -->
+  <div class="top-nav">
+    <a onclick="showPage('shop')">商店</a>
+    <a onclick="showPage('warehouse')">仓库</a>
+    <a id="money">资金：100000 元</a>
+  </div>
+
+  <!-- 商店页面（默认显示） -->
+  <div id="shop" class="page active">
+    <div class="container">
+      <!-- 左侧筛选栏 -->
+      <div class="filter">
+        <h3>主板筛选</h3>
+
+        <div class="filter-item">
+          <label><input type="checkbox"> DDR5</label>
+        </div>
+        <div class="filter-item">
+          <label><input type="checkbox"> X870 芯片组</label>
+        </div>
+        <div class="filter-item">
+          <label><input type="checkbox"> PCIe 5.0</label>
+        </div>
+        <div class="filter-item">
+          <label><input type="checkbox"> M.2 插槽</label>
+        </div>
+        <div class="filter-item">
+          <label><input type="checkbox"> E-ATX 大小</label>
+        </div>
+        <div class="filter-item">
+          <label><input type="checkbox"> WiFi 7</label>
+        </div>
+      </div>
+
+      <!-- 右侧商品 -->
+      <div class="products">
+        <div class="card">
+          <img src="https://picsum.photos/600/300" alt="主板">
+          <div class="card-body">
+            <h3>ROG CROSSHAIR X870E EXTREME</h3>
+            <div class="price">10000 元</div>
+            <p>
+              支持DDR5 • X870芯片组 • PCIe5.0 • 多M.2 • E-ATX • WiFi7
+            </p>
+            <button class="buy-btn" onclick="buy(event)">购买</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 仓库页面 -->
+  <div id="warehouse" class="page">
+    <div style="padding: 30px; max-width: 1000px; margin: 0 auto;">
+      <h2>我的仓库</h2>
+      <div id="warehouse-list" style="margin-top: 20px;"></div>
+    </div>
+  </div>
+
+  <script>
+    // 初始资金
+    let money = 100000;
+    // 仓库
+    let warehouse = [];
+
+    // 切换页面
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    }
+
+    // 更新资金显示
+    function updateMoney() {
+      document.getElementById('money').innerText = `资金：${money} 元`;
+    }
+
+    // 购买商品
+    function buy(e) {
+      e.stopPropagation(); // 不触发商品详情
+      const price = 10000;
+      
+      if (money >= price) {
+        money -= price;
+        warehouse.push("ROG CROSSHAIR X870E EXTREME");
+        updateMoney();
+        updateWarehouse();
+        alert("购买成功！已存入仓库");
+      } else {
+        alert("资金不足！");
+      }
+    }
+
+    // 更新仓库列表
+    function updateWarehouse() {
+      const list = document.getElementById('warehouse-list');
+      list.innerHTML = "";
+
+      if (warehouse.length === 0) {
+        list.innerHTML = "<p>仓库空空如也</p>";
+        return;
+      }
+
+      warehouse.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.style.padding = "10px";
+        div.style.border = "1px solid #ddd";
+        div.style.margin = "5px 0";
+        div.innerText = `${i+1}. ${item}`;
+        list.appendChild(div);
+      });
+    }
+
+    updateMoney();
+    updateWarehouse();
+  </script>
+</body>
+</html>
