@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>假想装机馆</title>
-  <!-- 简单美化，风格接近硬件品牌官网 -->
   <style>
     * {
       margin: 0;
@@ -12,7 +11,7 @@
       font-family: "Microsoft YaHei", sans-serif;
     }
 
-    /* 顶部导航栏 */
+    /* 顶部导航 */
     .top-nav {
       background: #1a1a1d;
       color: white;
@@ -36,95 +35,110 @@
     /* 主体布局 */
     .container {
       display: flex;
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 30px auto;
       padding: 0 20px;
     }
 
-    /* 左侧筛选栏 */
+    /* 左侧筛选 */
     .filter {
-      width: 260px;
+      width: 240px;
       padding: 20px;
       background: #f5f5f5;
       border-radius: 8px;
       position: sticky;
-      height: fit-content;
       top: 100px;
+      height: fit-content;
     }
     .filter h3 {
       margin-bottom: 15px;
       font-size: 16px;
     }
     .filter-item {
-      margin: 10px 0;
+      margin: 8px 0;
+      font-size: 14px;
     }
 
-    /* 右侧商品区 */
+    /* 右侧商品区 - 方形紧凑布局 */
     .products {
       flex: 1;
-      padding: 0 30px;
+      padding-left: 30px;
       display: grid;
-      grid-template-columns: repeat(auto-fill(), minmax(280px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
     }
 
-    /* 商品卡片 */
+    /* 方形商品卡片 */
     .card {
       border: 1px solid #ddd;
-      border-radius: 10px;
+      border-radius: 6px;
       overflow: hidden;
+      background: #fff;
       transition: 0.2s;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
     }
     .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
-    .card img {
+
+    /* 方形图片区域 */
+    .card-img {
       width: 100%;
-      height: 180px;
-      object-fit: cover;
+      aspect-ratio: 1 / 1;
       background: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     .card-body {
-      padding: 15px;
+      padding: 10px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
     }
     .card h3 {
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-    .card p {
       font-size: 13px;
-      color: #666;
-      line-height: 1.4;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
+      line-height: 1.3;
     }
     .price {
-      font-size: 18px;
+      font-size: 14px;
       color: #c00;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .buy-btn {
+      margin-top: auto;
       background: #0066cc;
       color: white;
       border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      font-size: 13px;
       cursor: pointer;
-      width: 100%;
     }
     .buy-btn:hover {
       background: #0055aa;
     }
 
     /* 页面切换 */
-    .page {
-      display: none;
-    }
-    .page.active {
-      display: block;
-      width: 100%;
+    .page { display: none; }
+    .page.active { display: block; width: 100%; }
+
+    /* 仓库 */
+    .warehouse-box {
+      padding: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
   </style>
 </head>
@@ -137,43 +151,74 @@
     <a id="money">资金：100000 元</a>
   </div>
 
-  <!-- 商店页面（默认显示） -->
+  <!-- 商店页面 -->
   <div id="shop" class="page active">
     <div class="container">
-      <!-- 左侧筛选栏 -->
+      <!-- 左侧筛选 -->
       <div class="filter">
         <h3>主板筛选</h3>
-
-        <div class="filter-item">
-          <label><input type="checkbox"> DDR5</label>
-        </div>
-        <div class="filter-item">
-          <label><input type="checkbox"> X870 芯片组</label>
-        </div>
-        <div class="filter-item">
-          <label><input type="checkbox"> PCIe 5.0</label>
-        </div>
-        <div class="filter-item">
-          <label><input type="checkbox"> M.2 插槽</label>
-        </div>
-        <div class="filter-item">
-          <label><input type="checkbox"> E-ATX 大小</label>
-        </div>
-        <div class="filter-item">
-          <label><input type="checkbox"> WiFi 7</label>
-        </div>
+        <div class="filter-item"><label><input type="checkbox"> DDR5</label></div>
+        <div class="filter-item"><label><input type="checkbox"> X870 芯片组</label></div>
+        <div class="filter-item"><label><input type="checkbox"> PCIe 5.0</label></div>
+        <div class="filter-item"><label><input type="checkbox"> M.2 插槽</label></div>
+        <div class="filter-item"><label><input type="checkbox"> E-ATX</label></div>
+        <div class="filter-item"><label><input type="checkbox"> WiFi 7</label></div>
       </div>
 
-      <!-- 右侧商品 -->
+      <!-- 方形商品列表 -->
       <div class="products">
         <div class="card">
-          <img src="https://picsum.photos/600/300" alt="主板">
+          <div class="card-img">
+            <img src="https://picsum.photos/300/300" alt="主板">
+          </div>
           <div class="card-body">
             <h3>ROG CROSSHAIR X870E EXTREME</h3>
             <div class="price">10000 元</div>
-            <p>
-              支持DDR5 • X870芯片组 • PCIe5.0 • 多M.2 • E-ATX • WiFi7
-            </p>
+            <button class="buy-btn" onclick="buy(event)">购买</button>
+          </div>
+        </div>
+
+        <!-- 复制下面卡片可以快速添加更多商品 -->
+        <div class="card">
+          <div class="card-img">
+            <img src="https://picsum.photos/300/300?random=2" alt="主板">
+          </div>
+          <div class="card-body">
+            <h3>ROG CROSSHAIR X870E EXTREME</h3>
+            <div class="price">10000 元</div>
+            <button class="buy-btn" onclick="buy(event)">购买</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img">
+            <img src="https://picsum.photos/300/300?random=3" alt="主板">
+          </div>
+          <div class="card-body">
+            <h3>ROG CROSSHAIR X870E EXTREME</h3>
+            <div class="price">10000 元</div>
+            <button class="buy-btn" onclick="buy(event)">购买</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img">
+            <img src="https://picsum.photos/300/300?random=4" alt="主板">
+          </div>
+          <div class="card-body">
+            <h3>ROG CROSSHAIR X870E EXTREME</h3>
+            <div class="price">10000 元</div>
+            <button class="buy-btn" onclick="buy(event)">购买</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-img">
+            <img src="https://picsum.photos/300/300?random=5" alt="主板">
+          </div>
+          <div class="card-body">
+            <h3>ROG CROSSHAIR X870E EXTREME</h3>
+            <div class="price">10000 元</div>
             <button class="buy-btn" onclick="buy(event)">购买</button>
           </div>
         </div>
@@ -183,16 +228,14 @@
 
   <!-- 仓库页面 -->
   <div id="warehouse" class="page">
-    <div style="padding: 30px; max-width: 1000px; margin: 0 auto;">
+    <div class="warehouse-box">
       <h2>我的仓库</h2>
-      <div id="warehouse-list" style="margin-top: 20px;"></div>
+      <div id="warehouse-list" style="margin-top:20px;"></div>
     </div>
   </div>
 
   <script>
-    // 初始资金
     let money = 100000;
-    // 仓库
     let warehouse = [];
 
     // 切换页面
@@ -201,16 +244,15 @@
       document.getElementById(pageId).classList.add('active');
     }
 
-    // 更新资金显示
+    // 更新资金
     function updateMoney() {
       document.getElementById('money').innerText = `资金：${money} 元`;
     }
 
-    // 购买商品
+    // 购买
     function buy(e) {
-      e.stopPropagation(); // 不触发商品详情
+      e.stopPropagation();
       const price = 10000;
-      
       if (money >= price) {
         money -= price;
         warehouse.push("ROG CROSSHAIR X870E EXTREME");
@@ -222,24 +264,14 @@
       }
     }
 
-    // 更新仓库列表
+    // 更新仓库
     function updateWarehouse() {
       const list = document.getElementById('warehouse-list');
-      list.innerHTML = "";
-
-      if (warehouse.length === 0) {
-        list.innerHTML = "<p>仓库空空如也</p>";
-        return;
-      }
-
-      warehouse.forEach((item, i) => {
-        const div = document.createElement('div');
-        div.style.padding = "10px";
-        div.style.border = "1px solid #ddd";
-        div.style.margin = "5px 0";
-        div.innerText = `${i+1}. ${item}`;
-        list.appendChild(div);
-      });
+      list.innerHTML = warehouse.length === 0
+        ? "<p>仓库空空如也</p>"
+        : warehouse.map((item, i) =>
+          `<div style="padding:10px; border:1px solid #ddd; margin:6px 0">${i+1}. ${item}</div>`
+        ).join('');
     }
 
     updateMoney();
