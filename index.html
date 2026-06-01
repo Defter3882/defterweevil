@@ -1,28 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>专属聊天室</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>跨网联机乒乓球</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#111;display:flex;flex-direction:column;align-items:center;padding:10px;color:#fff}
+#game{border:2px solid #fff;background:#000}
+.ctrl{margin-top:10px}
+input{padding:6px;font-size:16px;width:200px}
+</style>
 </head>
 <body>
-    <div id="chatbox" style="height: 300px; border: 1px solid #ccc; overflow-y: scroll;"></div>
-    <input type="text" id="message" placeholder="输入消息...">
-    <button onclick="sendMessage()">发送</button>
+<div class="ctrl">
+房间号：<input id="room" value="1001"> <button onclick="connect()">进入房间对战</button>
+</div>
+<canvas id="game" width="600" height="400"></canvas>
+<script>
+// ==========替换成你的云服务器公网IP+端口3000==========
+const WS_URL = "ws://xxx.xxx.xxx.xxx:3000";
 
-    <script>
-        // 替换为你部署好的后端 WebSocket 地址
-        const ws = new WebSocket('https://one23-dig3.onrender.com'); 
-        const chatbox = document.getElementById('chatbox');
+let ws,mySide="",room=document.getElementById('room').value;
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
 
-        ws.onmessage = (event) => {
-            chatbox.innerHTML += `<p style="color: blue;">对方: ${event.data}</p>`;
-        };
+// 游戏数据
+const game = {
+    w:canvas.width,h:canvas.height,
+    left:{y:150,w:12,h:80},
+    right:{y:150,w:12,h:80},
+    ball:{x:300,y:200,r:8,sx:4,sy:3}
+}
 
-        function sendMessage() {
-            const input = document.getElementById('message');
-            ws.send(input.value);
-            chatbox.innerHTML += `<p style="color: green;">我: ${input.value}</p>`;
-            input.value = '';
+// 连接服务
+function connect(){
+    room = document.getElementById('room').value;
+    ws = new WebSocket(WS_URL);
+    ws.onopen=()=>ws.send(JSON.stringify({type:"join",room}))
+    ws.onmessage=e=>{
+        const d = JSON.parse(e.data);
+        if(d.type==='start') mySide=d.side;
+        if(d.type==='pos'){
+            if(d.side==='left') game.left.y=d.y
+            else game.right.y=d.y
         }
-    </script>
+    }
+}
+
+// 触控/鼠标控制球拍
+canvas.addEventListener('mousemove',e=>{
+    const rect = canvas.getBoundingClientRect();
+    const y = e.clientY-rect.top-game[mySide].h/2;
+    y>0&&y<game.h-game[mySide].h && (game[mySide].y=y, sendPos())
+})
+// 手机触屏
+canvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const y = e.touches[0].clientY-rect.top-game[mySide].h/2;
+    y>0&&y<game.h-game[mySide].h && (game[mySide].y=y, sendPos())
+})
+
+// 上传球拍坐标到服务器
+function sendPos(){
+    if(!ws||ws.readyState!==1)return;
+    ws.send(JSON.stringify({type:'pos',side:mySide,y:game[mySide].y}))
+}
+
+// 球碰撞逻辑（本地运算，不用同步减少延迟）
+function ballUpdate(){
+    const b = game.ball;
+    b.x+=b.sx;b.y+=b.sy;
+    // 上下边界反弹
+    if(b.y-b.r<0||b.y+b.r>game.h) b.sy*=-1;
+    // 左右球拍碰撞
+    if(b.x-b.r<game.left.w && b.y>game.left.y && b.y<game.left.y+game.left.h) b.sx*=-1;
+    if(b.x+b.r>game.w-game.right.w && b.y>game.right.y && b.y<game.right.y+game.right.h) b.sx*=-1;
+    // 出界重置
+    if(b.x<0||b.x>game.w){
+        b.x=300;b.y=200;b.sx*=-1
+    }
+}
+
+// 渲染画面
+function render(){
+    ctx.fillStyle="#000";ctx.fillRect(0,0,game.w,game.h)
+    // 中线
+    ctx.strokeStyle="#666";ctx.setLineDash([8,8]);
+    ctx.beginPath();ctx.moveTo(game.w/2,0);ctx.lineTo(game.w/2,game.h);ctx.stroke();
+    ctx.setLineDash([])
+    // 左右球拍
+    ctx.fillStyle="#0cf";
+    ctx.fillRect(0,game.left.y,game.left.w,game.left.h);
+    ctx.fillRect(game.w-game.right.w,game.right.y,game.right.w,game.right.h);
+    // 乒乓球
+    ctx.beginPath();ctx.arc(game.ball.x,game.ball.y,game.ball.r,0,Math.PI*2);
+    ctx.fillStyle="#fff";ctx.fill();
+}
+
+// 游戏循环
+function loop(){
+    ballUpdate();render();requestAnimationFrame(loop)
+}
+loop()
+</script>
 </body>
 </html>
