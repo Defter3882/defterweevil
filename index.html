@@ -1,198 +1,28 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>1V1 网页乒乓球联机对战</title>
-    <!-- 引入 PeerJS 联机库 -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <style>
-        body { background: #222; color: #fff; font-family: sans-serif; text-align: center; }
-        canvas { background: #000; display: block; margin: 20px auto; border: 4px solid #fff; }
-        .menu { margin: 20px; padding: 10px; background: #333; display: inline-block; border-radius: 5px; }
-        input, button { padding: 8px; margin: 5px; font-size: 16px; }
-    </style>
+    <title>专属聊天室</title>
 </head>
 <body>
+    <div id="chatbox" style="height: 300px; border: 1px solid #ccc; overflow-y: scroll;"></div>
+    <input type="text" id="message" placeholder="输入消息...">
+    <button onclick="sendMessage()">发送</button>
 
-    <h1>1V1 乒乓球对战</h1>
-    
-    <div class="menu">
-        <p>你的房间ID: <b id="my-id" style="color:#00ff88;">正在生成...</b></p>
-        <hr>
-        <input type="text" id="peer-id-input" placeholder="输入朋友的房间ID">
-        <button onclick="connectToFriend()">连接朋友</button>
-        <p id="status" style="color: #ffcc00;">等待连接...</p>
-    </div>
+    <script>
+        // 替换为你部署好的后端 WebSocket 地址
+        const ws = new WebSocket('wss://your-backend-url.onrender.com'); 
+        const chatbox = document.getElementById('chatbox');
 
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
-    <p>控制方式：键盘 <b>W</b> 键向上，<b>S</b> 键向下</p>
+        ws.onmessage = (event) => {
+            chatbox.innerHTML += `<p style="color: blue;">对方: ${event.data}</p>`;
+        };
 
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-// --- 游戏基础数据 ---
-const paddleWidth = 10, paddleHeight = 80;
-let player1Y = 160, player2Y = 160; // 挡板初始Y坐标
-let ballX = 400, ballY = 200;       // 球初始坐标
-let ballSpeedX = 4, ballSpeedY = 4; // 球的速度
-let myScore = 0, enemyScore = 0;
-
-let isHost = false; // 是否为主机（主机负责计算球的碰撞和位置）
-let role = "";      // "host" 或 "guest"
-let conn = null;    // P2P 连接对象
-
-// --- 键盘监听 ---
-let upPressed = false, downPressed = false;
-document.addEventListener('keydown', (e) => {
-    if(e.key === 'w' || e.key === 'W') upPressed = true;
-    if(e.key === 's' || e.key === 'S') downPressed = true;
-});
-document.addEventListener('keyup', (e) => {
-    if(e.key === 'w' || e.key === 'W') upPressed = false;
-    if(e.key === 's' || e.key === 'S') downPressed = false;
-});
-
-// --- P2P 联机核心逻辑 ---
-// 初始化 Peer（使用 PeerJS 免费公共服务器）
-const peer = new Peer();
-
-peer.on('open', (id) => {
-    document.getElementById('my-id').innerText = id;
-    document.getElementById('status').innerText = "把你的房间ID发给朋友吧！";
-});
-
-// 场景 A：作为【主机】，等待朋友连接
-peer.on('connection', (connection) => {
-    conn = connection;
-    isHost = true;
-    role = "host";
-    setupConnection();
-});
-
-// 场景 B：作为【客机】，主动连接朋友
-function connectToFriend() {
-    const friendId = document.getElementById('peer-id-input').value;
-    if (!friendId) return alert("请输入ID！");
-    
-    conn = peer.connect(friendId);
-    isHost = false;
-    role = "guest";
-    setupConnection();
-}
-
-// 连接成功后的数据监听
-function setupConnection() {
-    document.getElementById('status').innerText = "连接成功！游戏开始！";
-    document.getElementById('status').style.color = "#00ff88";
-
-    conn.on('data', (data) => {
-        if (isHost) {
-            // 主机收到客机的挡板位置
-            player2Y = data.paddleY;
-        } else {
-            // 客机收到主机同步的所有游戏状态
-            player1Y = data.player1Y;
-            player2Y = data.player2Y;
-            ballX = data.ballX;
-            ballY = data.ballY;
-            myScore = data.guestScore;    // 注意对调分数视角
-            enemyScore = data.hostScore;
+        function sendMessage() {
+            const input = document.getElementById('message');
+            ws.send(input.value);
+            chatbox.innerHTML += `<p style="color: green;">我: ${input.value}</p>`;
+            input.value = '';
         }
-    });
-
-    // 启动游戏主循环
-    setInterval(gameLoop, 1000 / 60); // 60帧
-}
-
-// --- 游戏核心逻辑 ---
-function gameLoop() {
-    // 1. 移动自己的挡板
-    if (upPressed) {
-        if (isHost) player1Y = Math.max(0, player1Y - 6);
-        else player2Y = Math.max(0, player2Y - 6);
-    }
-    if (downPressed) {
-        if (isHost) player1Y = Math.min(canvas.height - paddleHeight, player1Y + 6);
-        else player2Y = Math.min(canvas.height - paddleHeight, player2Y + 6);
-    }
-
-    // 2. 数据同步与球的物理计算
-    if (isHost) {
-        // 【主机核心职责】：计算球的运动和碰撞（防止两人计算不一致导致球分身）
-        ballX += ballSpeedX;
-        ballY += ballSpeedY;
-
-        // 碰撞天花板或地板
-        if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
-
-        // 碰撞左边挡板 (主机)
-        if (ballX <= paddleWidth && ballY >= player1Y && ballY <= player1Y + paddleHeight) {
-            ballSpeedX = -ballSpeedX;
-        }
-        // 碰撞右边挡板 (客机)
-        if (ballX >= canvas.width - paddleWidth && ballY >= player2Y && ballY <= player2Y + paddleHeight) {
-            ballSpeedX = -ballSpeedX;
-        }
-
-        // 得分判定
-        if (ballX < 0) { enemyScore++; resetBall(); }
-        if (ballX > canvas.width) { myScore++; resetBall(); }
-
-        // 主机把所有数据广播给客机
-        conn.send({
-            player1Y: player1Y,
-            player2Y: player2Y,
-            ballX: ballX,
-            ballY: ballY,
-            hostScore: myScore,
-            guestScore: enemyScore
-        });
-    } else {
-        // 【客机核心职责】：只需要把自己的挡板位置发给主机
-        conn.send({ paddleY: player2Y });
-    }
-
-    // 3. 渲染画面
-    draw();
-}
-
-function resetBall() {
-    ballX = canvas.width / 2;
-    ballY = canvas.height / 2;
-    ballSpeedX = -ballSpeedX;
-}
-
-function draw() {
-    // 清空画布
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 画中间的分隔线
-    ctx.strokeStyle = "#555";
-    ctx.setLineDash([10, 10]);
-    ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke();
-
-    // 画挡板 (左：主机，右：客机)
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, player1Y, paddleWidth, paddleHeight);
-    ctx.fillRect(canvas.width - paddleWidth, player2Y, paddleWidth, paddleHeight);
-
-    // 画球
-    ctx.beginPath();
-    ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffcc00";
-    ctx.fill();
-
-    // 显示分数
-    ctx.font = "30px sans-serif";
-    if (role === "host") {
-        ctx.fillText(myScore, 200, 50);
-        ctx.fillText(enemyScore, 600, 50);
-    } else {
-        ctx.fillText(enemyScore, 200, 50);
-        ctx.fillText(myScore, 600, 50);
-    }
-}
-</script>
+    </script>
 </body>
 </html>
