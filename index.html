@@ -1,281 +1,198 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>假想装机馆</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Microsoft YaHei", sans-serif;
-    }
-
-    /* 顶部导航 */
-    .top-nav {
-      background: #1a1a1d;
-      color: white;
-      display: flex;
-      padding: 15px 30px;
-      gap: 30px;
-      font-size: 18px;
-      position: sticky;
-      top: 0;
-      z-index: 999;
-    }
-    .top-nav a {
-      color: white;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .top-nav a:hover {
-      color: #00aaff;
-    }
-
-    /* 主体布局 */
-    .container {
-      display: flex;
-      max-width: 1600px;
-      margin: 30px auto;
-      padding: 0 20px;
-    }
-
-    /* 左侧筛选 */
-    .filter {
-      width: 240px;
-      padding: 20px;
-      background: #f5f5f5;
-      border-radius: 8px;
-      position: sticky;
-      top: 100px;
-      height: fit-content;
-    }
-    .filter h3 {
-      margin-bottom: 15px;
-      font-size: 16px;
-    }
-    .filter-item {
-      margin: 8px 0;
-      font-size: 14px;
-    }
-
-    /* 右侧商品区 - 方形紧凑布局 */
-    .products {
-      flex: 1;
-      padding-left: 30px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px;
-    }
-
-    /* 方形商品卡片 */
-    .card {
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      overflow: hidden;
-      background: #fff;
-      transition: 0.2s;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-    }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-
-    /* 方形图片区域 */
-    .card-img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: #eee;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .card-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .card-body {
-      padding: 10px;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .card h3 {
-      font-size: 13px;
-      margin-bottom: 6px;
-      line-height: 1.3;
-    }
-    .price {
-      font-size: 14px;
-      color: #c00;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-    .buy-btn {
-      margin-top: auto;
-      background: #0066cc;
-      color: white;
-      border: none;
-      padding: 6px 8px;
-      border-radius: 4px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .buy-btn:hover {
-      background: #0055aa;
-    }
-
-    /* 页面切换 */
-    .page { display: none; }
-    .page.active { display: block; width: 100%; }
-
-    /* 仓库 */
-    .warehouse-box {
-      padding: 30px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>1V1 网页乒乓球联机对战</title>
+    <!-- 引入 PeerJS 联机库 -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body { background: #222; color: #fff; font-family: sans-serif; text-align: center; }
+        canvas { background: #000; display: block; margin: 20px auto; border: 4px solid #fff; }
+        .menu { margin: 20px; padding: 10px; background: #333; display: inline-block; border-radius: 5px; }
+        input, button { padding: 8px; margin: 5px; font-size: 16px; }
+    </style>
 </head>
-
 <body>
-  <!-- 顶部导航 -->
-  <div class="top-nav">
-    <a onclick="showPage('shop')">商店</a>
-    <a onclick="showPage('warehouse')">仓库</a>
-    <a id="money">资金：100000 元</a>
-  </div>
 
-  <!-- 商店页面 -->
-  <div id="shop" class="page active">
-    <div class="container">
-      <!-- 左侧筛选 -->
-      <div class="filter">
-        <h3>主板筛选</h3>
-        <div class="filter-item"><label><input type="checkbox"> DDR5</label></div>
-        <div class="filter-item"><label><input type="checkbox"> X870 芯片组</label></div>
-        <div class="filter-item"><label><input type="checkbox"> PCIe 5.0</label></div>
-        <div class="filter-item"><label><input type="checkbox"> M.2 插槽</label></div>
-        <div class="filter-item"><label><input type="checkbox"> E-ATX</label></div>
-        <div class="filter-item"><label><input type="checkbox"> WiFi 7</label></div>
-      </div>
-
-      <!-- 方形商品列表 -->
-      <div class="products">
-        <div class="card">
-          <div class="card-img">
-            <img src="https://picsum.photos/300/300" alt="主板">
-          </div>
-          <div class="card-body">
-            <h3>ROG CROSSHAIR X870E EXTREME</h3>
-            <div class="price">10000 元</div>
-            <button class="buy-btn" onclick="buy(event)">购买</button>
-          </div>
-        </div>
-
-        <!-- 复制下面卡片可以快速添加更多商品 -->
-        <div class="card">
-          <div class="card-img">
-            <img src="https://picsum.photos/300/300?random=2" alt="主板">
-          </div>
-          <div class="card-body">
-            <h3>ROG CROSSHAIR X870E EXTREME</h3>
-            <div class="price">10000 元</div>
-            <button class="buy-btn" onclick="buy(event)">购买</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-img">
-            <img src="https://picsum.photos/300/300?random=3" alt="主板">
-          </div>
-          <div class="card-body">
-            <h3>ROG CROSSHAIR X870E EXTREME</h3>
-            <div class="price">10000 元</div>
-            <button class="buy-btn" onclick="buy(event)">购买</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-img">
-            <img src="https://picsum.photos/300/300?random=4" alt="主板">
-          </div>
-          <div class="card-body">
-            <h3>ROG CROSSHAIR X870E EXTREME</h3>
-            <div class="price">10000 元</div>
-            <button class="buy-btn" onclick="buy(event)">购买</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-img">
-            <img src="https://picsum.photos/300/300?random=5" alt="主板">
-          </div>
-          <div class="card-body">
-            <h3>ROG CROSSHAIR X870E EXTREME</h3>
-            <div class="price">10000 元</div>
-            <button class="buy-btn" onclick="buy(event)">购买</button>
-          </div>
-        </div>
-      </div>
+    <h1>1V1 乒乓球对战</h1>
+    
+    <div class="menu">
+        <p>你的房间ID: <b id="my-id" style="color:#00ff88;">正在生成...</b></p>
+        <hr>
+        <input type="text" id="peer-id-input" placeholder="输入朋友的房间ID">
+        <button onclick="connectToFriend()">连接朋友</button>
+        <p id="status" style="color: #ffcc00;">等待连接...</p>
     </div>
-  </div>
 
-  <!-- 仓库页面 -->
-  <div id="warehouse" class="page">
-    <div class="warehouse-box">
-      <h2>我的仓库</h2>
-      <div id="warehouse-list" style="margin-top:20px;"></div>
-    </div>
-  </div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <p>控制方式：键盘 <b>W</b> 键向上，<b>S</b> 键向下</p>
 
-  <script>
-    let money = 100000;
-    let warehouse = [];
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-    // 切换页面
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
+// --- 游戏基础数据 ---
+const paddleWidth = 10, paddleHeight = 80;
+let player1Y = 160, player2Y = 160; // 挡板初始Y坐标
+let ballX = 400, ballY = 200;       // 球初始坐标
+let ballSpeedX = 4, ballSpeedY = 4; // 球的速度
+let myScore = 0, enemyScore = 0;
+
+let isHost = false; // 是否为主机（主机负责计算球的碰撞和位置）
+let role = "";      // "host" 或 "guest"
+let conn = null;    // P2P 连接对象
+
+// --- 键盘监听 ---
+let upPressed = false, downPressed = false;
+document.addEventListener('keydown', (e) => {
+    if(e.key === 'w' || e.key === 'W') upPressed = true;
+    if(e.key === 's' || e.key === 'S') downPressed = true;
+});
+document.addEventListener('keyup', (e) => {
+    if(e.key === 'w' || e.key === 'W') upPressed = false;
+    if(e.key === 's' || e.key === 'S') downPressed = false;
+});
+
+// --- P2P 联机核心逻辑 ---
+// 初始化 Peer（使用 PeerJS 免费公共服务器）
+const peer = new Peer();
+
+peer.on('open', (id) => {
+    document.getElementById('my-id').innerText = id;
+    document.getElementById('status').innerText = "把你的房间ID发给朋友吧！";
+});
+
+// 场景 A：作为【主机】，等待朋友连接
+peer.on('connection', (connection) => {
+    conn = connection;
+    isHost = true;
+    role = "host";
+    setupConnection();
+});
+
+// 场景 B：作为【客机】，主动连接朋友
+function connectToFriend() {
+    const friendId = document.getElementById('peer-id-input').value;
+    if (!friendId) return alert("请输入ID！");
+    
+    conn = peer.connect(friendId);
+    isHost = false;
+    role = "guest";
+    setupConnection();
+}
+
+// 连接成功后的数据监听
+function setupConnection() {
+    document.getElementById('status').innerText = "连接成功！游戏开始！";
+    document.getElementById('status').style.color = "#00ff88";
+
+    conn.on('data', (data) => {
+        if (isHost) {
+            // 主机收到客机的挡板位置
+            player2Y = data.paddleY;
+        } else {
+            // 客机收到主机同步的所有游戏状态
+            player1Y = data.player1Y;
+            player2Y = data.player2Y;
+            ballX = data.ballX;
+            ballY = data.ballY;
+            myScore = data.guestScore;    // 注意对调分数视角
+            enemyScore = data.hostScore;
+        }
+    });
+
+    // 启动游戏主循环
+    setInterval(gameLoop, 1000 / 60); // 60帧
+}
+
+// --- 游戏核心逻辑 ---
+function gameLoop() {
+    // 1. 移动自己的挡板
+    if (upPressed) {
+        if (isHost) player1Y = Math.max(0, player1Y - 6);
+        else player2Y = Math.max(0, player2Y - 6);
+    }
+    if (downPressed) {
+        if (isHost) player1Y = Math.min(canvas.height - paddleHeight, player1Y + 6);
+        else player2Y = Math.min(canvas.height - paddleHeight, player2Y + 6);
     }
 
-    // 更新资金
-    function updateMoney() {
-      document.getElementById('money').innerText = `资金：${money} 元`;
+    // 2. 数据同步与球的物理计算
+    if (isHost) {
+        // 【主机核心职责】：计算球的运动和碰撞（防止两人计算不一致导致球分身）
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
+
+        // 碰撞天花板或地板
+        if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
+
+        // 碰撞左边挡板 (主机)
+        if (ballX <= paddleWidth && ballY >= player1Y && ballY <= player1Y + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+        }
+        // 碰撞右边挡板 (客机)
+        if (ballX >= canvas.width - paddleWidth && ballY >= player2Y && ballY <= player2Y + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+        }
+
+        // 得分判定
+        if (ballX < 0) { enemyScore++; resetBall(); }
+        if (ballX > canvas.width) { myScore++; resetBall(); }
+
+        // 主机把所有数据广播给客机
+        conn.send({
+            player1Y: player1Y,
+            player2Y: player2Y,
+            ballX: ballX,
+            ballY: ballY,
+            hostScore: myScore,
+            guestScore: enemyScore
+        });
+    } else {
+        // 【客机核心职责】：只需要把自己的挡板位置发给主机
+        conn.send({ paddleY: player2Y });
     }
 
-    // 购买
-    function buy(e) {
-      e.stopPropagation();
-      const price = 10000;
-      if (money >= price) {
-        money -= price;
-        warehouse.push("ROG CROSSHAIR X870E EXTREME");
-        updateMoney();
-        updateWarehouse();
-        alert("购买成功！已存入仓库");
-      } else {
-        alert("资金不足！");
-      }
-    }
+    // 3. 渲染画面
+    draw();
+}
 
-    // 更新仓库
-    function updateWarehouse() {
-      const list = document.getElementById('warehouse-list');
-      list.innerHTML = warehouse.length === 0
-        ? "<p>仓库空空如也</p>"
-        : warehouse.map((item, i) =>
-          `<div style="padding:10px; border:1px solid #ddd; margin:6px 0">${i+1}. ${item}</div>`
-        ).join('');
-    }
+function resetBall() {
+    ballX = canvas.width / 2;
+    ballY = canvas.height / 2;
+    ballSpeedX = -ballSpeedX;
+}
 
-    updateMoney();
-    updateWarehouse();
-  </script>
+function draw() {
+    // 清空画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 画中间的分隔线
+    ctx.strokeStyle = "#555";
+    ctx.setLineDash([10, 10]);
+    ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke();
+
+    // 画挡板 (左：主机，右：客机)
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, player1Y, paddleWidth, paddleHeight);
+    ctx.fillRect(canvas.width - paddleWidth, player2Y, paddleWidth, paddleHeight);
+
+    // 画球
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffcc00";
+    ctx.fill();
+
+    // 显示分数
+    ctx.font = "30px sans-serif";
+    if (role === "host") {
+        ctx.fillText(myScore, 200, 50);
+        ctx.fillText(enemyScore, 600, 50);
+    } else {
+        ctx.fillText(enemyScore, 200, 50);
+        ctx.fillText(myScore, 600, 50);
+    }
+}
+</script>
 </body>
 </html>
